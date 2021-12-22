@@ -2,33 +2,42 @@
 This is a collection of open source benchmarks used to evaluate PyTorch performance.
 
 `torchbenchmark/models` contains copies of popular or exemplary workloads which have been modified to
-(a) expose a standardized API for benchmark drivers, (b) optionally, enable JIT,
- (c) contain a miniature version of train/test data and a dependency install script.
+(a) expose a standardized API for benchmark drivers, (b) use a miniature version of train/inference data,
+usually a single batch, and a dependency install script, (c) optionally enable PyTorch features such as
+JIT, fx2trt, and lazy tensor.
 
 ## Installation
-The benchmark suite should be self contained in terms of dependencies,
-except for the torch products which are intended to be installed separately so
+The benchmark suite should be self contained in terms of dependencies and input data.
+It uses `git-lfs` to host minimal input data for models that don't accept synthesized input data.
+The benchmark expects users to install `torch`, `torchvision`, and `torchtext` separately so
 different torch versions can be benchmarked.
 
+### Recommended environment
+
+- python >= 3.7, recommend python 3.8
+- For GPU tests, CUDA 10.2+, recommend CUDA 11.3
+- pytorch >= 1.9.0
+
 ### Using Pre-built Packages
-Use python 3.7 as currently there are compatibility issues with 3.8+.  Conda is optional but suggested.  To switch to python 3.7 in conda:
+We sugguest using `conda` to create a new benchmarking environment:
 ```
 # using your current conda environment:
-conda install -y python=3.7
+conda install -y python=3.8
 
 # or, using a new conda environment
-conda create -n torchbenchmark python=3.7
+conda create -n torchbenchmark python=3.8
 conda activate torchbenchmark
+conda install git-lfs
 ```
 
-Install pytorch, torchtext, and torchvision using conda:
+Install pytorch, torchtext, and torchvision nightly versions using conda:
 ```
 conda install -y pytorch torchtext torchvision -c pytorch-nightly
 ```
 Or use pip:
 (but don't mix and match pip and conda for the torch family of libs! - [see notes below](#notes))
 ```
-pip install --pre torch torchvision torchtext -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
+pip install --pre torch torchvision torchtext -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
 ```
 
 Install the benchmark suite, which will recursively install dependencies for all the models.  Currently, the repo is intended to be installed from the source tree.
@@ -39,7 +48,7 @@ python install.py
 ```
 
 ### Building From Source
-Note that when building PyTorch from source, torchtext and torchvision must also be built from source to make sure the C APIs match.
+Note that when building PyTorch from source, torchtext and torchvision must also be built from source to make sure the ABIs match.
 
 See detailed instructions to install torchtext [here](https://github.com/pytorch/text), and torchvision [here](https://github.com/pytorch/vision).
 Make sure to enable CUDA (by `FORCE_CUDA=1`) if using CUDA.
@@ -54,8 +63,7 @@ python install.py
 - Setup steps require connectivity, make sure to enable a proxy if needed.
 - See the [CI scripts](scripts/) and their orchestration in [config.yml](.circleci/config.yml)
 for hints about how to replicate the CI environment if you have issues
-- PyTorch versions before 1.6 are not compatible with all the models in torchbenchmark.  See branch [wconstab/compare_torch_versions](https://github.com/pytorch/benchmark/tree/wconstab/compare_torch_versions) for a set of models that worked back to torch 1.4.0.
-- torch, torchtext, and torchvision must all be installed from the same build process.  This means it isn't possible to mix conda torchtext
+- torch, torchtext, and torchvision must all be installed from the same build process. This means it isn't possible to mix conda torchtext
   with pip torch, or mix built-from-source torch with pip torchtext.  It's important to match even the conda channel (nightly vs regular).
   This is due to the differences in the compilation process used by different packaging systems producing incompatible python binary extensions.
 
@@ -129,6 +137,3 @@ See [Unidash](https://www.internalfb.com/intern/unidash/dashboard/pytorch_benchm
 ## Adding new models
 
 See [Adding Models](torchbenchmark/models/ADDING_MODELS.md).
-
-## Legacy
-See `legacy` for rnn benchmarks and related scripts that were previously at the top level of this repo.
