@@ -12,7 +12,7 @@ def add_bool_arg(parser: argparse.ArgumentParser, name: str, default_value: bool
 def parse_args(model: BenchmarkModel, extra_args: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     # by default, enable half precision for inference
-    add_bool_arg(parser, "eval-fp16", default_value=True)
+    add_bool_arg(parser, "eval_fp16", default_value=True)
     args = parser.parse_args(extra_args)
     args.device = model.device
     args.jit = model.jit
@@ -24,7 +24,7 @@ def parse_args(model: BenchmarkModel, extra_args: List[str]) -> argparse.Namespa
 def apply_args(model: BenchmarkModel, args: argparse.Namespace):
     # apply eval_fp16
     if args.eval_fp16:
-        model.eval_model, model.eval_inputs = enable_eval_fp16(model, model.eval_inputs)
+        model.eval_model, model.eval_inputs = enable_eval_fp16(model.eval_model, model.eval_inputs)
 
 def enable_eval_fp16(model: torch.nn.Module, example_input: Dict[str, torch.tensor]) -> Tuple[torch.nn.Module, Dict[str, torch.tensor]]:
     return model.half(), {'input_ids': example_input['input_ids'].half()}
