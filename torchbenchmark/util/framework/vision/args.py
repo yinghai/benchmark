@@ -1,7 +1,7 @@
 import argparse
 import torch
 from torchbenchmark.util.model import BenchmarkModel
-from typing import List, Tuple
+from typing import List, Dict
 
 def parse_args(model: BenchmarkModel, extra_args: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -31,7 +31,7 @@ def apply_args(model: BenchmarkModel, args: argparse.Namespace):
 def enable_fp16(model: torch.nn.Module, example_input: Tuple[torch.tensor]) -> Tuple[torch.nn.Module, Tuple[torch.tensor]]:
     return model.half(), (example_input[0].half(),)
 
-def enable_fx2trt(max_batch_size: int, fp16: bool, model: torch.nn.Module, example_inputs: Tuple[torch.tensor]) -> torch.nn.Module:
+def enable_fx2trt(max_batch_size: int, fp16: bool, model: torch.nn.Module, example_inputs: Dict[[str, torch.tensor]]) -> torch.nn.Module:
     from torchbenchmark.util.fx2trt import lower_to_trt
     return lower_to_trt(module=model, input=example_inputs, \
                         max_batch_size=max_batch_size, fp16_mode=fp16)
